@@ -2,6 +2,7 @@ package sf_test
 
 import (
 	"context"
+	"errors"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -31,6 +32,27 @@ func TestDo(t *testing.T) {
 	wg.Wait()
 	if got, want := atomic.LoadUint64(&cnt), uint64(1); got != want {
 		t.Errorf("want 1 got %d", cnt)
+	}
+}
+
+func TestDo_Canceled(t *testing.T) {
+	f := func() int {
+		time.Sleep(30 * time.Millisecond)
+		return 1
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	var err error
+	done := make(chan struct{})
+	go func() {
+		_, err, _ = sf.Do(ctx, "key", func(ctx context.Context) (int, error) { return f(), nil })
+		close(done)
+	}()
+	cancel()
+
+	<-done
+
+	if !errors.Is(err, context.Canceled) {
+		t.Errorf("want context canceled error")
 	}
 }
 

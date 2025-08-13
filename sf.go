@@ -77,6 +77,10 @@ func Do[T any](ctx context.Context, key string, fn func(context.Context) (T, err
 	}
 	mu.Unlock()
 
+	if ctx.Err() != nil { // handle cancel
+		err = ctx.Err()
+	}
+
 	if err != nil {
 		return *new(T), err, false
 	}
