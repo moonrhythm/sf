@@ -1,5 +1,5 @@
 module github.com/moonrhythm/sf
 
-go 1.23.5
+go 1.25.0
 
-require golang.org/x/sync v0.16.0
+require golang.org/x/sync v0.20.0
